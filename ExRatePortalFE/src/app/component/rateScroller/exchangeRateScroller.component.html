@@ -1,0 +1,47 @@
+<div class="scroller scroller--hover-pause">
+  <div class="scroller__content">
+    <div *ngFor="let item of rates">
+      <mat-card class="green-card">
+        <div class="card-content">
+          <div class="bank-code">
+            {{ item.code }}
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="bank-rate-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="bank-rate">
+            {{ item.rate }}
+          </div>
+          <div class="bank-icon">
+            <mat-icon>assured_workload</mat-icon>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+  <!-- Mirrors the content above -->
+  <div class="scroller__content" aria-hidden="true">
+    <div *ngFor="let item of rates">
+      <mat-card class="green-card">
+        <div class="card-content">
+          <div class="bank-code">
+            {{ item.code }}
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="bank-rate-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="bank-rate">
+            {{ item.rate }}
+          </div>
+          <div class="bank-icon">
+            <mat-icon>assured_workload</mat-icon>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

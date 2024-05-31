@@ -1,0 +1,21 @@
+.currency-selector {
+  padding: 2em;
+}
+
+.currency-dropdowns {
+  margin-bottom: 1em;
+  display: flex;
+}
+
+.date-dropdown {
+  margin-left: 1em;
+}
+
+.today-rate {
+  padding: 0.1em;
+  color: #60cd18;
+  border-radius: 0.1em;
+  margin-left: 1em;
+  font-weight: bold;
+  align-content: center;
+}

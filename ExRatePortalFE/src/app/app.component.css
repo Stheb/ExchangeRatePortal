@@ -1,0 +1,41 @@
+@import "https://fonts.googleapis.com/icon?family=Material+Icons";
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  position: relative;
+  height: 75vh;
+  width: 45vw;
+  box-shadow:
+    rgba(96, 205, 24, 0.4) 5px 5px,
+    rgba(96, 205, 24, 0.3) 10px 10px,
+    rgba(96, 205, 24, 0.2) 15px 15px,
+    rgba(96, 205, 24, 0.1) 20px 20px,
+    rgba(96, 205, 24, 0.05) 25px 25px;
+  border: 2px solid #60CD18;
+  border-radius: 0.5em;
+  padding-top: 0.5em;
+}
+
+.center {
+  height: 100vh;
+}
+
+.over-lapping-icon {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  position: absolute;
+  top: -2rem;
+  left: -2rem;
+  width: 5em;
+  height: 5em;
+  background-color: #60CD18;
+  border-radius: 0.5em;
+  color: white;
+  z-index: 10;
+}

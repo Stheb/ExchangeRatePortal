@@ -29,7 +29,6 @@ public class ExchangeService {
     @Autowired
     private LbLtClient lbLtClient;
 
-    // TODO remove
     public Flux<ExchangeDto> getExchangeRateToday() {
         return exchangeRepository.findAll()
                 .map(this::convertToDto);
@@ -100,7 +99,6 @@ public class ExchangeService {
 
     // XML to entity
     private ExchangeEntity convertToEntity(FxRate fxRate) {
-        // TODO get(1) method is super bad here. Need to rethink this part!
         List<CurrencyAmount> currencyAmountList = fxRate.getCurrencyAmountList();
         return ExchangeEntity.of(
                 currencyAmountList.get(1).getCurrency(),

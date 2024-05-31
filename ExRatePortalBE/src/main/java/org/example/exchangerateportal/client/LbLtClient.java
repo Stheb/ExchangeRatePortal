@@ -18,7 +18,6 @@ import java.time.LocalDate;
 @Service
 public class LbLtClient {
 
-    // TODO move this to CLIENT package. This is not a service!
     private static final Logger serviceLogger = LoggerFactory.getLogger(LbLtClient.class);
 
     private final String DEFAULT_EXCHANGE_RATE_TYPE = "EU";
@@ -53,7 +52,6 @@ public class LbLtClient {
     public Mono<ExchangeRates> getExchangeRateHistoryForCurrency(String currency, String starDate) {
         LocalDate today = LocalDate.now();
 
-        // TODO handle different types of date time representations.
         String startDateString = compareDates(starDate);
 
         return lbLtWebClient.get()
