@@ -1,0 +1,33 @@
+.rate-calculator {
+  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
+  padding: 2em;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  border-radius: 0.2em;
+}
+
+.calculator-label {
+  color: #60cd18;
+  font-weight: bold;
+}
+
+.calculator-inputs {
+  display: flex;
+  justify-content: space-between;
+}
+
+.calculator-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.swap-icon {
+  color: #4caf50;
+}
+
+.swap-icon mat-icon {
+  font-size: 3em;
+  height: 1em;
+  width: 1em;
+}

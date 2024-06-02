@@ -1,14 +1,15 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, EventEmitter, OnInit, Output} from "@angular/core";
 import {ExchangeRatePortalService} from "../../service/ExchangeRatePortal.service";
 import {CurrencyModel} from "../../models/currency.model";
 import {FormsModule} from "@angular/forms";
-import {DropdownFilterOptions, DropdownModule} from "primeng/dropdown";
+import {DropdownModule} from "primeng/dropdown";
 import {InputTextModule} from "primeng/inputtext";
 import {ChartModule} from "primeng/chart";
 import {ExchangeModel} from "../../models/exchange.model";
 import {HistoryDateStartModel} from "../../models/historyDateStart.model";
 import {NgIf} from "@angular/common";
 import {DividerModule} from "primeng/divider";
+import {ProgressSpinnerModule} from "primeng/progressspinner";
 
 @Component({
   selector: 'currency-selector',
@@ -20,7 +21,8 @@ import {DividerModule} from "primeng/divider";
     InputTextModule,
     ChartModule,
     NgIf,
-    DividerModule
+    DividerModule,
+    ProgressSpinnerModule
   ],
   standalone: true
 })
@@ -28,11 +30,15 @@ export class CurrencySelectorComponent implements OnInit {
 
   currencies: CurrencyModel[] = [];
   selectedCurrency: CurrencyModel | null = null;
+  @Output() currencySelected = new EventEmitter<string>();
+  @Output() rateSelected = new EventEmitter<number>();
   filteredCurrencies: CurrencyModel[] = [];
 
   historyData: ExchangeModel[] = [];
   data: any;
   options: any;
+  isHistoryError: boolean = false;
+  isChartLoading: boolean = false;
 
   fromDateChoices: HistoryDateStartModel[] = [];
   selectedFromDate: HistoryDateStartModel | null = null;
@@ -51,6 +57,8 @@ export class CurrencySelectorComponent implements OnInit {
 
   onCurrencySelected(): void {
     if (this.selectedCurrency !== null) {
+      this.isHistoryError = false;
+      this.isChartLoading = true;
 
       if (this.selectedFromDate == null) {
         this.selectedFromDate = this.fromDateChoices[0];
@@ -58,6 +66,10 @@ export class CurrencySelectorComponent implements OnInit {
 
       this.exchangeService.getExchangeRateHistoryFor(this.selectedCurrency.code, this.selectedFromDate.from)
         .subscribe((history: ExchangeModel[]) => {
+
+          this.isHistoryError = history.length === 0;
+
+          this.isChartLoading = false;
           this.historyData = history;
           this.createData(history);
         })
@@ -65,13 +77,15 @@ export class CurrencySelectorComponent implements OnInit {
       this.exchangeService.getExchangeRateFor(this.selectedCurrency.code)
         .subscribe((rate: ExchangeModel) => {
           this.selectedCurrencyRate = rate;
+
+          this.rateSelected.emit(this.selectedCurrencyRate.rate)
         })
+
+      this.currencySelected.emit(this.selectedCurrency.code);
     }
   }
 
   createData(history: ExchangeModel[]) {
-    const documentStyle = getComputedStyle(document.documentElement);
-
     let numbers = history.map(item => {
       return item.rate;
     });
@@ -87,7 +101,7 @@ export class CurrencySelectorComponent implements OnInit {
           label: 'Currency data for: ' + this.selectedCurrency?.code,
           data: numbers,
           fill: false,
-          borderColor: documentStyle.getPropertyValue('--green-500'),
+          borderColor: "#4caf50",
           tension: 0.4
         }
       ]

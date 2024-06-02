@@ -1,0 +1,29 @@
+<div class="rate-calculator">
+  <div class="calculator-labels">
+    <label class="block font-bold mb-2 calculator-label">EUR Calculator</label>
+    <label class="block font-bold mb-2 calculator-label">{{ currentSelectedCurrency }} Calculator</label>
+  </div>
+  <div class="calculator-inputs">
+    <p-inputNumber
+      currency="EUR"
+      [(ngModel)]="inputNumber"
+      (ngModelChange)="updateResult()"
+      (keydown)="handleKeyDown($event, 'input')"
+      mode="currency"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="2"/>
+
+    <div class="swap-icon">
+      <mat-icon>swap_horiz</mat-icon>
+    </div>
+
+    <p-inputNumber
+      currency="{{currentSelectedCurrency}}"
+      (ngModelChange)="updateInput()"
+      (keydown)="handleKeyDown($event, 'result')"
+      mode="currency"
+      [minFractionDigits]="0"
+      [maxFractionDigits]="2"
+      [(ngModel)]="result"/>
+  </div>
+</div>

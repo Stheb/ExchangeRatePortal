@@ -8,7 +8,6 @@
       (onFilter)="dropDownFilter($event)"
       (onChange)="onCurrencySelected()"
       variant="filled"
-      [showClear]="true"
       placeholder="Select a currency">
       <ng-template pTemplate="selectedItem" let-selectedOption>
         <div class="flex align-items-center gap-2">
@@ -38,9 +37,17 @@
     </p-dropdown>
 
     <div class="today-rate" *ngIf="selectedCurrencyRate">
-      Current Rate: {{selectedCurrencyRate.rate}}
+      Current Rate: {{ selectedCurrencyRate.rate }}
     </div>
   </div>
-  <p-divider />
-  <p-chart type="line" [data]="data" [options]="options"/>
+  <p-divider/>
+
+  <div class="currency-chart">
+    <div *ngIf="isHistoryError" class="chart-error">No history available!</div>
+    <p-progressSpinner *ngIf="isChartLoading" class="chart-loader"
+      strokeWidth="2"
+      fill="var(--surface-ground)"
+      animationDuration="1s" />
+    <p-chart type="line" [data]="data" [options]="options"/>
+  </div>
 </div>

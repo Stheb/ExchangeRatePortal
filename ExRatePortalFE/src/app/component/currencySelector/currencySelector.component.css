@@ -19,3 +19,61 @@
   font-weight: bold;
   align-content: center;
 }
+
+.currency-chart {
+  position: relative;
+}
+
+.chart-error {
+  position: absolute;
+  color: #E01B3E;
+  font-weight: bold;
+  z-index: 10;
+  top: 10vh;
+  left: 18vw;
+}
+
+.chart-loader {
+  position: absolute;
+  top: 7vh;
+  left: 18vw;
+  z-index: 10;
+  stroke: #60cd18;
+}
+
+:host ::ng-deep .chart-loader .p-progress-spinner-circle {
+  animation: spinner-dash 1.5s ease-in-out infinite, spinner-color 6s ease-in-out infinite;
+}
+
+@keyframes spinner-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+
+
+@keyframes spinner-color {
+  100%,
+  0% {
+    stroke: #1BE0B8;
+  }
+  40% {
+    stroke: #1BE075;
+  }
+  66% {
+    stroke: #1BE032;
+  }
+  80%,
+  90% {
+    stroke: #A4E01B;
+  }
+}
