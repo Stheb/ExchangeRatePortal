@@ -2,11 +2,11 @@ package org.example.exchangerateportal.service;
 
 import org.example.exchangerateportal.client.LbLtClient;
 import org.example.exchangerateportal.model.dto.ExchangeDto;
-import org.example.exchangerateportal.model.entity.ExchangeEntity;
+import org.example.exchangerateportal.model.entity.ExchangeRateHistory;
 import org.example.exchangerateportal.model.xml.exchangeHistory.CurrencyAmount;
 import org.example.exchangerateportal.model.xml.exchangeHistory.ExchangeRates;
 import org.example.exchangerateportal.model.xml.exchangeHistory.FxRate;
-import org.example.exchangerateportal.repository.ExchangeRepository;
+import org.example.exchangerateportal.repository.ExchangeRateHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ExchangeService {
@@ -24,87 +24,71 @@ public class ExchangeService {
     private static final Logger logger = LoggerFactory.getLogger(ExchangeService.class);
 
     @Autowired
-    private ExchangeRepository exchangeRepository;
+    private ExchangeRateHistoryRepository exchangeRateHistoryRepository;
 
     @Autowired
     private LbLtClient lbLtClient;
 
     public Flux<ExchangeDto> getExchangeRateToday() {
-        return exchangeRepository.findAll()
+        return exchangeRateHistoryRepository.findLatestRatesForAllCodes()
                 .map(this::convertToDto);
     }
 
-    public Flux<ExchangeDto> getExchangeRateHistoryByCurrencyAndStartDate(String currency, String startDate) {
-        return this.lbLtClient.getExchangeRateHistoryForCurrency(currency, startDate)
-                .map(exchangeRates -> exchangeRates.getRates().stream()
-                        .map(this::convertToDto).toList())
-                .flatMapMany(Flux::fromIterable);
+    @Transactional
+    public Flux<ExchangeDto> getExchangeRateHistoryByCurrencyAndStartDate(String currency, String startDate, Boolean forceHistoryFromLbLt) {
+
+        if (forceHistoryFromLbLt) {
+            return lbLtClient.getExchangeRateHistoryForCurrency(currency, "2020-01-01")
+                    .flatMapMany(rates -> Flux.fromIterable(rates.getRates())
+                            .map(this::convertToHistoryItem)
+                            .flatMap(newRate -> exchangeRateHistoryRepository.findByDateAndCode(newRate.getDate(), newRate.getCode())
+                                    .switchIfEmpty(exchangeRateHistoryRepository.save(newRate))
+                                    .then(Mono.empty())
+                            )
+                    )
+                    .thenMany(exchangeRateHistoryRepository.findAllByCodeAndDateAfter(currency, LocalDate.parse(startDate)))
+                    .map(this::convertToDto);
+        } else {
+            return this.exchangeRateHistoryRepository.findAllByCodeAndDateAfter(currency, LocalDate.parse(startDate))
+                    .map(this::convertToDto);
+        }
+    }
+
+    private ExchangeDto convertToDto(ExchangeRateHistory exchangeRateHistory) {
+        return new ExchangeDto(exchangeRateHistory.getCode(), exchangeRateHistory.getRate(), exchangeRateHistory.getDate().toString());
     }
 
     @Transactional
     public Mono<Void> updateExchangeRateToday(ExchangeRates exchangeRates) {
-        List<ExchangeEntity> convertedEntity = exchangeRates.getRates().stream()
-                .map(this::convertToEntity)
-                .toList();
 
-        return updateNecessaryEntities(convertedEntity)
-                .flatMapMany(exchangeRepository::saveAll)
-                .doOnNext(savedEntities -> {
-                    logger.info("Updated today's exchange rate {} to the database", savedEntities);
-                })
+        List<ExchangeRateHistory> convertedEntity = exchangeRates.getRates().stream()
+                .map(this::convertToHistoryItem).toList();
+
+        return Flux.fromIterable(convertedEntity)
+                .flatMap(historyItem ->
+                        exchangeRateHistoryRepository.findByDateAndCode(historyItem.getDate(), historyItem.getCode())
+                                .switchIfEmpty(Mono.just(historyItem))
+                )
+                .filter(historyItem -> historyItem.getId() == null)
+                .collectList()
+                .flatMapMany(exchangeRateHistoryRepository::saveAll)
+                .doOnNext(savedEntities -> logger.info("Updated today's exchange rate {} to the database", savedEntities))
                 .then();
-
     }
 
-    private Mono<List<ExchangeEntity>> updateNecessaryEntities(List<ExchangeEntity> convertedEntity) {
-        List<String> codes = convertedEntity.stream().map(ExchangeEntity::getCode).toList();
+    private ExchangeRateHistory convertToHistoryItem(FxRate fxRate) {
 
-        return exchangeRepository.findAllByCodeIn(codes)
-                .collectList()
-                .flatMapMany(existingEntities ->
-                        Flux.fromIterable(convertedEntity)
-                                .map(coEntity -> {
-
-                                    // Update rate when necessary
-                                    Optional<ExchangeEntity> existing = existingEntities.stream()
-                                            .filter(exEntity -> exEntity.getCode().equals(coEntity.getCode()))
-                                            .findFirst();
-
-                                    if (existing.isPresent()) {
-                                        ExchangeEntity existingEntity = existing.get();
-                                        return ExchangeEntity.of(existingEntity.getCode(), coEntity.getRate(), coEntity.getDate(), existingEntity.getId());
-                                    } else {
-                                        return coEntity;
-                                    }
-                                })).collectList();
+        List<CurrencyAmount> currencyAmountList = fxRate.getCurrencyAmountList();
+        return new ExchangeRateHistory(
+                currencyAmountList.get(1).getCurrency(),
+                currencyAmountList.get(1).getAmount(),
+                LocalDate.parse(fxRate.getDateTime())
+        );
     }
 
     public Mono<ExchangeDto> getExchangeRateForCurrency(String currency) {
-        return exchangeRepository.findByCode(currency)
+        return exchangeRateHistoryRepository.findLatestByCode(currency)
                 .map(this::convertToDto);
-    }
-
-    private ExchangeDto convertToDto(FxRate fxRate) {
-        List<CurrencyAmount> currencyAmountList = fxRate.getCurrencyAmountList();
-        return ExchangeDto.of(
-                currencyAmountList.get(1).getCurrency(),
-                currencyAmountList.get(1).getAmount(),
-                fxRate.getDateTime()
-        );
-    }
-
-    private ExchangeDto convertToDto(ExchangeEntity exchange) {
-        return ExchangeDto.of(exchange.getCode(), exchange.getRate(), exchange.getDate());
-    }
-
-    // XML to entity
-    private ExchangeEntity convertToEntity(FxRate fxRate) {
-        List<CurrencyAmount> currencyAmountList = fxRate.getCurrencyAmountList();
-        return ExchangeEntity.of(
-                currencyAmountList.get(1).getCurrency(),
-                currencyAmountList.get(1).getAmount(),
-                fxRate.getDateTime()
-        );
     }
 
 }

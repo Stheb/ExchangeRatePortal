@@ -2,9 +2,7 @@ package org.example.exchangerateportal.jobs;
 
 import org.example.exchangerateportal.service.CurrencyService;
 import org.example.exchangerateportal.client.LbLtClient;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,7 +15,7 @@ public class PopulateCurrencyJob implements Job {
     private static final Logger logger = LoggerFactory.getLogger(PopulateCurrencyJob.class);
 
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void execute(JobExecutionContext jobExecutionContext) {
         LbLtClient lbLtClient = (LbLtClient) jobExecutionContext.getJobDetail().getJobDataMap().get("lbLtClient");
         CurrencyService currencyService = (CurrencyService) jobExecutionContext.getJobDetail().getJobDataMap().get("currencyService");
 
@@ -26,10 +24,21 @@ public class PopulateCurrencyJob implements Job {
                 .doOnSuccess(onSuccess -> {
                     LocalDateTime localDateTime = LocalDateTime.now();
                     logger.info("Currencies successfully added at {}", localDateTime);
-                    return;
+                    triggerExchangeRateJob(jobExecutionContext);
                 })
                 .doOnError(error -> logger.error("Couldn't add currencies", error))
                 .subscribe();
+    }
+
+    private void triggerExchangeRateJob(JobExecutionContext jobExecutionContext) {
+        try {
+
+            PopulateExchangeRatesJob populateExchangeRatesJob = new PopulateExchangeRatesJob();
+            populateExchangeRatesJob.execute(jobExecutionContext);
+
+        } catch (SchedulerException e) {
+            logger.error("Error while scheduling PopulateExchangeRatesJob", e);
+        }
     }
 
 }

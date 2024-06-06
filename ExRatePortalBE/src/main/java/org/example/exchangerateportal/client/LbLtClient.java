@@ -49,20 +49,18 @@ public class LbLtClient {
                 .onErrorResume(throwable -> handleError(new Currencies(), throwable));
     }
 
-    public Mono<ExchangeRates> getExchangeRateHistoryForCurrency(String currency, String starDate) {
+    public Mono<ExchangeRates> getExchangeRateHistoryForCurrency(String currency, String startDate) {
         LocalDate today = LocalDate.now();
 
-        String startDateString = compareDates(starDate);
+        String startDateString = compareDates(startDate);
 
         return lbLtWebClient.get()
-                .uri(uriBuilder -> {
-                    return uriBuilder.path(exchangeRateForCurrencyUri)
-                            .queryParam("tp", DEFAULT_EXCHANGE_RATE_TYPE)
-                            .queryParam("ccy", currency)
-                            .queryParam("dtFrom", startDateString)
-                            .queryParam("dtTo", today)
-                            .build();
-                })
+                .uri(uriBuilder -> uriBuilder.path(exchangeRateForCurrencyUri)
+                        .queryParam("tp", DEFAULT_EXCHANGE_RATE_TYPE)
+                        .queryParam("ccy", currency)
+                        .queryParam("dtFrom", startDateString)
+                        .queryParam("dtTo", today)
+                        .build())
                 .retrieve()
                 .bodyToMono(String.class)
                 .flatMap(xmlString -> deserializeXml(xmlString, ExchangeRates.class))
@@ -82,11 +80,9 @@ public class LbLtClient {
 
     public Mono<ExchangeRates> getExchangeRateToday() {
         return lbLtWebClient.get()
-                .uri(uriBuilder -> {
-                    return uriBuilder.path(currentFxRatesUri)
-                            .queryParam("tp", DEFAULT_EXCHANGE_RATE_TYPE)
-                            .build();
-                })
+                .uri(uriBuilder -> uriBuilder.path(currentFxRatesUri)
+                        .queryParam("tp", DEFAULT_EXCHANGE_RATE_TYPE)
+                        .build())
                 .retrieve()
                 .bodyToMono(String.class)
                 .flatMap(xmlString -> deserializeXml(xmlString, ExchangeRates.class))

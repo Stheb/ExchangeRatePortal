@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
 public class ExchangeRateController {
@@ -44,9 +42,9 @@ public class ExchangeRateController {
                 .doOnNext(exchangeRate -> logger.info("Retrieved today's exchange rate: {}", exchangeRate));
     }
 
-    @GetMapping("/exchangeRateHistory/{currency}/{startDate}")
-    public Flux<ExchangeRecord> getExchangeRateHistory(@PathVariable String currency, @PathVariable String startDate) {
-        return exchangeService.getExchangeRateHistoryByCurrencyAndStartDate(currency, startDate)
+    @GetMapping("/exchangeRateHistory/{currency}/{startDate}/{forceFromLbLt}")
+    public Flux<ExchangeRecord> getExchangeRateHistory(@PathVariable String currency, @PathVariable String startDate, @PathVariable Boolean forceFromLbLt) {
+        return exchangeService.getExchangeRateHistoryByCurrencyAndStartDate(currency, startDate, forceFromLbLt)
                 .map(this::convertToRecord)
                 .doOnNext(history -> logger.info("Retrieved exchange rate history item for {}: {}", currency, history));
     }

@@ -2,7 +2,7 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {ExchangeModel} from "../models/exchange.model";
 import {catchError, Observable, of, retry} from "rxjs";
 import {CurrencyModel} from "../models/currency.model";
-import {inject, Injectable} from "@angular/core";
+import {Injectable} from "@angular/core";
 
 @Injectable({
   providedIn: 'root'
@@ -34,8 +34,8 @@ export class ExchangeRatePortalService {
       );
   }
 
-  public getExchangeRateHistoryFor(code: string, startDate: string): Observable<ExchangeModel[]> {
-    return this.httpClient.get<ExchangeModel[]>(this.portal_api_url + "/exchangeRateHistory/" + code + "/" + startDate)
+  public getExchangeRateHistoryFor(code: string, startDate: string, forceFromLbLt: boolean): Observable<ExchangeModel[]> {
+    return this.httpClient.get<ExchangeModel[]>(this.portal_api_url + "/exchangeRateHistory/" + code + "/" + startDate + "/" + forceFromLbLt)
       .pipe(
         retry(2),
         catchError((err: HttpErrorResponse) => {

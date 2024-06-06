@@ -10,6 +10,8 @@ import {HistoryDateStartModel} from "../../models/historyDateStart.model";
 import {NgIf} from "@angular/common";
 import {DividerModule} from "primeng/divider";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
+import {CheckboxModule} from "primeng/checkbox";
+import {TooltipModule} from "primeng/tooltip";
 
 @Component({
   selector: 'currency-selector',
@@ -22,7 +24,9 @@ import {ProgressSpinnerModule} from "primeng/progressspinner";
     ChartModule,
     NgIf,
     DividerModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    CheckboxModule,
+    TooltipModule
   ],
   standalone: true
 })
@@ -45,6 +49,8 @@ export class CurrencySelectorComponent implements OnInit {
 
   selectedCurrencyRate: ExchangeModel | null = null;
 
+  forceFromLb: boolean = false;
+
   constructor(private exchangeService: ExchangeRatePortalService) {
   }
 
@@ -64,7 +70,7 @@ export class CurrencySelectorComponent implements OnInit {
         this.selectedFromDate = this.fromDateChoices[0];
       }
 
-      this.exchangeService.getExchangeRateHistoryFor(this.selectedCurrency.code, this.selectedFromDate.from)
+      this.exchangeService.getExchangeRateHistoryFor(this.selectedCurrency.code, this.selectedFromDate.from, this.forceFromLb)
         .subscribe((history: ExchangeModel[]) => {
 
           this.isHistoryError = history.length === 0;

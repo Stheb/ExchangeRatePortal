@@ -36,6 +36,16 @@
       </ng-template>
     </p-dropdown>
 
+    <div class="history-force">
+      <p-checkbox
+        pTooltip="Force it to get data from LbLt to save data into DB."
+        (onChange)="onCurrencySelected()"
+        [(ngModel)]="forceFromLb"
+        label="Force LBLT"
+        name="Force LBLT"
+        [binary]="true" />
+    </div>
+
     <div class="today-rate" *ngIf="selectedCurrencyRate">
       Current Rate: {{ selectedCurrencyRate.rate }}
     </div>

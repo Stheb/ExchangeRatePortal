@@ -20,6 +20,13 @@
   align-content: center;
 }
 
+.history-force {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  margin-left: 1em;
+}
+
 .currency-chart {
   position: relative;
 }
